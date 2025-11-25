@@ -65,6 +65,13 @@ python archive_extractor.py --dry-run
 python archive_extractor.py --backup
 ```
 
+**Enable detailed output (debug mode):**
+```bash
+python archive_extractor.py --debug
+```
+
+By default, the program shows clean progress indicators (1-100%). Use `--debug` to see detailed file names during extraction and cleanup.
+
 See [TEST_MODE.md](TEST_MODE.md) for detailed test mode documentation.
 
 ### Custom Directory
@@ -159,6 +166,12 @@ archives/
 - .command
 - Any file with execute permissions
 
+### WSL (Windows Subsystem for Linux)
+- **Automatic detection** - Detects WSL environment automatically
+- **Windows executables** - Runs .exe, .bat, .cmd files through Windows
+- **Path conversion** - Converts `/mnt/c/` paths to `C:\` automatically
+- **Native execution** - Uses `cmd.exe` to run Windows programs from WSL
+
 ## Notes
 
 - Archives are extracted to their parent directory
@@ -182,12 +195,47 @@ These files are preserved after extraction:
 - **Extracted content**: All files extracted from archives
 - **Executables**: `.exe`, `.bat`, `.sh`, etc.
 
+## Command-Line Options
+
+### Basic Options
+```bash
+python archive_extractor.py [directory]        # Specify directory (default: archives)
+python archive_extractor.py --help             # Show all options
+```
+
+### Testing & Safety
+```bash
+--dry-run           # Preview actions without modifying files
+--backup            # Create backups before deleting archives
+--debug             # Show detailed file names (default: progress %)
+--no-interactive    # Use simple text menu instead of curses UI
+```
+
+### Examples
+```bash
+# Clean progress display (default)
+python archive_extractor.py
+
+# See detailed file operations
+python archive_extractor.py --debug
+
+# Test before running for real
+python archive_extractor.py --dry-run
+
+# Safe mode with backups
+python archive_extractor.py --backup
+
+# Custom directory with debug output
+python archive_extractor.py /path/to/archives --debug
+```
+
 ## Safety Features
 
 - Only processes folders you explicitly select
 - Archives are only deleted after successful extraction
 - Maximum iteration limit prevents infinite loops with circular archive references
-- Clear feedback for each operation
+- Clean progress indicators by default (use `--debug` for details)
+- Dry-run mode to preview changes before applying
 
 ## Troubleshooting
 

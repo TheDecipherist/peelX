@@ -40,3 +40,7 @@ executions.log
 *.xz
 *.tgz
 *.tbz2
+
+
+# Logs
+*.log

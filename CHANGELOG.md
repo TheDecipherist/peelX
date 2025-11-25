@@ -1,6 +1,6 @@
 # Changelog
 
-## Version 1.5 - Full-Screen Preview Mode
+## Version 1.5 - Full-Screen Preview Mode & WSL Support
 
 ### Added
 - **Full-screen preview mode** - Preview takes over entire terminal
@@ -10,6 +10,24 @@
   - Scrollbar on right edge shows position
   - Header shows "Preview Mode (Full Screen)" when active
 
+- **WSL (Windows Subsystem for Linux) support** - Run Windows executables from WSL
+  - Automatic WSL environment detection
+  - Path conversion from Linux (`/mnt/c/`) to Windows (`C:\`) format
+  - Windows executables (.exe, .bat, .cmd, .msi) run through `cmd.exe`
+  - Proper working directory handling
+
+- **Progress indicators** - Clean percentage-based progress display
+  - Extraction progress: "Extracting: 75%"
+  - Cleanup progress: "Cleaning up: 50%"
+  - Real-time updates using carriage return for smooth display
+  - Completes with checkmark: "Extracting: 100% ✓"
+
+- **Debug mode** - Detailed output for troubleshooting
+  - `--debug` flag shows individual file names during operations
+  - Default mode shows only percentage progress (cleaner UX)
+  - Available in both interactive and auto modes
+  - Useful for development and debugging
+
 ### Enhanced
 - **Dual-mode interface** - Switch seamlessly between split-screen and full-screen
   - Split-screen: List on left, compact preview on right
@@ -17,6 +35,8 @@
   - Context-sensitive keyboard controls adapt to active mode
 - **Better readability** - No text truncation in full-screen mode
 - **Mode indicators** - Clear visual feedback in header and footer
+- **Cross-platform execution** - Improved executable running on Windows, Linux, macOS, and WSL
+- **Cleaner output** - Progress indicators reduce terminal clutter by default
 
 ## Version 1.4 - Two-Pane Navigation & Execution Tracking
 

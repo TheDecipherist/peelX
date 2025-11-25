@@ -26,6 +26,8 @@ def main():
                        help='Preview actions without extracting or deleting anything')
     parser.add_argument('--backup', action='store_true',
                        help='Create backup before deleting archives')
+    parser.add_argument('--debug', action='store_true',
+                       help='Enable debug mode with detailed output (shows file names)')
 
     args = parser.parse_args()
 
@@ -37,7 +39,11 @@ def main():
         print("🔍 DRY-RUN MODE: No files will be modified")
         print("="*60 + "\n")
 
-    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run)
+    if args.debug:
+        print("🐛 DEBUG MODE: Detailed output enabled")
+        print("="*60 + "\n")
+
+    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run, debug=args.debug)
 
     print(f"Scanning directory: {extractor.base_dir.absolute()}\n")
 

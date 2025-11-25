@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Test NFO file detection with various naming patterns."""
 
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import tempfile
 import shutil
 from interactive_selector import InteractiveSelector

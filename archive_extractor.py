@@ -54,10 +54,11 @@ class ArchiveExtractor:
         '.par',      # Old parity files
     }
 
-    def __init__(self, base_dir: str = 'archives', dry_run: bool = False):
+    def __init__(self, base_dir: str = 'archives', dry_run: bool = False, debug: bool = False):
         self.base_dir = Path(base_dir)
         self.current_platform = platform.system()
         self.dry_run = dry_run
+        self.debug = debug
 
     def scan_directories(self) -> List[Tuple[Path, bool]]:
         """
@@ -278,14 +279,26 @@ class ArchiveExtractor:
             if not archives_found:
                 break  # No more archives to extract
 
-            print(f"  Found {len(archives_found)} archive(s) to extract...")
+            if self.debug:
+                print(f"  Found {len(archives_found)} archive(s) to extract...")
 
-            for archive_path in archives_found:
+            total_archives = len(archives_found)
+            for idx, archive_path in enumerate(archives_found, 1):
+                # Calculate progress percentage
+                progress = int((idx / total_archives) * 100)
+
                 if self.dry_run:
-                    print(f"    [DRY-RUN] Would extract: {archive_path.name}")
+                    if self.debug:
+                        print(f"    [DRY-RUN] Would extract: {archive_path.name}")
+                    else:
+                        print(f"\r  Extracting: {progress}%", end='', flush=True)
                     processed.add(str(archive_path))
                 else:
-                    print(f"    Extracting: {archive_path.name}")
+                    if self.debug:
+                        print(f"    [{progress}%] Extracting: {archive_path.name}")
+                    else:
+                        print(f"\r  Extracting: {progress}%", end='', flush=True)
+
                     extract_to = archive_path.parent
 
                     if self.extract_archive(archive_path, extract_to):
@@ -293,6 +306,10 @@ class ArchiveExtractor:
                     else:
                         # Mark as processed even if failed to avoid retry
                         processed.add(str(archive_path))
+
+            # Complete the progress line
+            if not self.debug:
+                print(f"\r  Extracting: 100% ✓")
 
             iteration += 1
 
@@ -343,20 +360,43 @@ class ArchiveExtractor:
         """
         deleted_count = 0
 
+        # First, collect all files to delete for progress tracking
+        files_to_delete = []
         for root, _, files in os.walk(directory):
             for file in files:
                 file_path = Path(root) / file
                 if self._is_archive(file_path):
-                    if self.dry_run:
-                        deleted_count += 1
-                        print(f"    [DRY-RUN] Would delete: {file_path.name}")
+                    files_to_delete.append(file_path)
+
+        total_files = len(files_to_delete)
+        if total_files == 0:
+            return 0
+
+        # Now delete with progress indicator
+        for idx, file_path in enumerate(files_to_delete, 1):
+            progress = int((idx / total_files) * 100)
+
+            if self.dry_run:
+                deleted_count += 1
+                if self.debug:
+                    print(f"    [DRY-RUN] Would delete: {file_path.name}")
+                else:
+                    print(f"\r  Cleaning up: {progress}%", end='', flush=True)
+            else:
+                try:
+                    file_path.unlink()
+                    deleted_count += 1
+                    if self.debug:
+                        print(f"    [{progress}%] Deleted: {file_path.name}")
                     else:
-                        try:
-                            file_path.unlink()
-                            deleted_count += 1
-                            print(f"    Deleted: {file_path.name}")
-                        except Exception as e:
-                            print(f"    ✗ Could not delete {file_path.name}: {e}")
+                        print(f"\r  Cleaning up: {progress}%", end='', flush=True)
+                except Exception as e:
+                    if self.debug:
+                        print(f"    ✗ Could not delete {file_path.name}: {e}")
+
+        # Complete the progress line
+        if not self.debug:
+            print(f"\r  Cleaning up: 100% ✓")
 
         return deleted_count
 
@@ -394,8 +434,37 @@ class ArchiveExtractor:
             print(f"Running: {executable_path}")
             print(f"{'='*60}\n")
 
+            # Check if we're in WSL (Windows Subsystem for Linux)
+            is_wsl = os.path.exists('/proc/version') and 'microsoft' in open('/proc/version').read().lower()
+
+            # Detect Windows executable extensions
+            windows_exts = {'.exe', '.bat', '.cmd', '.msi'}
+            is_windows_exe = executable_path.suffix.lower() in windows_exts
+
             if self.current_platform == 'Windows':
                 subprocess.run([str(executable_path)], cwd=executable_path.parent)
+            elif is_wsl and is_windows_exe:
+                # In WSL, convert Linux path to Windows path and run with cmd.exe
+                print("  ℹ Detected WSL environment - converting path for Windows execution")
+
+                # Convert /mnt/c/path to C:\path
+                win_path = str(executable_path)
+                if win_path.startswith('/mnt/'):
+                    drive = win_path[5].upper()
+                    win_path = f"{drive}:{win_path[6:]}".replace('/', '\\')
+
+                # Get working directory in Windows format
+                win_cwd = str(executable_path.parent)
+                if win_cwd.startswith('/mnt/'):
+                    drive = win_cwd[5].upper()
+                    win_cwd = f"{drive}:{win_cwd[6:]}".replace('/', '\\')
+
+                print(f"  → Windows path: {win_path}")
+                print(f"  → Working directory: {win_cwd}")
+                print()
+
+                # Run using Windows cmd.exe
+                subprocess.run(['cmd.exe', '/c', f'cd /d "{win_cwd}" && "{win_path}"'])
             else:
                 # Make sure it's executable
                 os.chmod(executable_path, os.stat(executable_path).st_mode | 0o111)
@@ -566,6 +635,8 @@ def main():
                        help='Create backup before deleting archives')
     parser.add_argument('--no-interactive', action='store_true',
                        help='Disable interactive selector, use simple text menu')
+    parser.add_argument('--debug', action='store_true',
+                       help='Enable debug mode with detailed output (shows file names)')
 
     args = parser.parse_args()
 
@@ -575,7 +646,11 @@ def main():
         print("🔍 DRY-RUN MODE: No files will be modified")
         print("="*60 + "\n")
 
-    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run)
+    if args.debug:
+        print("🐛 DEBUG MODE: Detailed output enabled")
+        print("="*60 + "\n")
+
+    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run, debug=args.debug)
 
     print(f"Scanning directory: {extractor.base_dir.absolute()}\n")
 

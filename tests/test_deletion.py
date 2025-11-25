@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Test that split archives will be deleted."""
 
-from archive_extractor import ArchiveExtractor
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from archive_extractor import ArchiveExtractor
 
 def test_archive_deletion_detection():
     """Test which files will be deleted as archives."""

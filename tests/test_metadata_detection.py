@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """Test metadata file detection."""
 
-from archive_extractor import ArchiveExtractor
+import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from archive_extractor import ArchiveExtractor
 
 def test_metadata_detection():
     """Test that metadata files are detected correctly."""
