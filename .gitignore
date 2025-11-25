@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Archives directory (user's data)
+archives/
+archives - Copy/
+
+# Backups
+.backups/
+archives/.backups/
+
+# Execution logs
+executions.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archives
+*.rar
+*.zip
+*.7z
+*.tar
+*.gz
+*.bz2
+*.xz
+*.tgz
+*.tbz2

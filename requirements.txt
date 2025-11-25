@@ -1,0 +1,8 @@
+# Optional dependencies for Archive Extractor
+# Core functionality works with Python standard library only
+
+# For RAR file support
+rarfile>=4.0
+
+# For 7Z file support
+py7zr>=0.20.0
