@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "peelx"
-version = "1.0.1"
+version = "1.0.2"
 description = "Archive extractor and executable runner - scans directories, recursively extracts nested archives, and provides an interactive interface to run executables."
 readme = "README.md"
 license = "MIT"

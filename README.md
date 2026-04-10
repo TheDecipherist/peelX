@@ -2,7 +2,7 @@
 
 ![PeelX Hero](https://raw.githubusercontent.com/TheDecipherist/peelX/main/peelX_hero.webp)
 
-**Recursively extract nested archives and run every installer -- one command, zero hassle.**
+**Recursively extract nested archives and run every installer. One command, zero hassle.**
 
 ---
 
@@ -34,23 +34,23 @@ One command:
 peelx downloads/
 ```
 
-PeelX extracts every archive (including archives inside archives), cleans up all the leftover archive files, and drops you into an interactive selector where you can run each executable in sequence.
+PeelX extracts every archive (including archives inside archives), cleans up all the leftovers, and drops you into an interactive selector where you can run each executable in sequence.
 
 ---
 
 ## Features
 
-**Recursive nested extraction** -- Archives within archives within archives. PeelX keeps extracting until there is nothing left to unpack, up to 50 levels deep.
+**Recursive nested extraction** - Archives within archives within archives. PeelX keeps extracting until there's nothing left to unpack, up to 50 levels deep.
 
-**Split archive support** -- Handles multi-part archives (.r00-.r99, .z01-.z99, .001-.999, .7z.001, etc.) automatically. Extracts from the main archive file and cleans up every split part.
+**Split archive support** - Handles multi-part archives (.r00-.r99, .z01-.z99, .001-.999, .7z.001, etc.) automatically. Extracts from the main archive file and cleans up every split part.
 
-**Interactive executable selector** -- After extraction, a curses-based interface shows every executable found across all extracted folders. Navigate with arrow keys, preview NFO/README files in a side panel, run installers directly, and track which ones you have already executed.
+**Interactive executable selector** - After extraction, a curses-based interface shows every executable found across all your extracted folders. Navigate with arrow keys, preview NFO/README files in a side panel, and run installers directly. It also tracks which ones you've already run.
 
-**Automatic cleanup** -- Removes all archive files, split parts, checksums (.sfv, .md5, .sha1, .sha256, .crc), and parity files (.par2) after extraction. NFO files and extracted content are preserved.
+**Automatic cleanup** - Removes all archive files, split parts, checksums (.sfv, .md5, .sha1, .sha256, .crc), and parity files (.par2) after extraction. NFO files and extracted content are preserved.
 
-**Cross-platform** -- Windows, Linux, macOS, and WSL. On WSL, PeelX auto-detects the environment and converts paths so Windows executables launch correctly.
+**Cross-platform** - Windows, Linux, macOS, and WSL. On WSL, PeelX auto-detects the environment and converts paths so Windows executables launch correctly.
 
-**Safety first** -- Dry-run mode previews every action without touching files. Backup mode copies archives before deletion. A hard limit of 50 extraction iterations prevents runaway loops.
+**Safety first** - Dry-run mode lets you preview every action without touching files. Backup mode copies archives before deletion. A hard limit of 50 extraction iterations prevents runaway loops.
 
 ---
 
@@ -68,7 +68,7 @@ pip install peelx[all]
 
 ### Windows Standalone
 
-Download `peelx.exe` from the [Releases](https://github.com/TheDecipherist/PeelX/releases) page. No Python required -- just drop it in your PATH or run it directly.
+Download `peelx.exe` from the [Releases](https://github.com/TheDecipherist/PeelX/releases) page. No Python required, just drop it in your PATH or run it directly.
 
 ### From Source
 
@@ -97,19 +97,19 @@ peelx ~/Downloads/drivers/ --dry-run
 peelx ~/Downloads/drivers/ --debug
 ```
 
-That is it. PeelX scans the target directory, finds every folder containing archives, extracts recursively, cleans up, and launches the interactive selector.
+That's it. PeelX scans the target directory, finds every folder containing archives, extracts recursively, cleans up, and launches the interactive selector.
 
 ---
 
 ## Why PeelX?
 
-You have been there. Everyone has been there.
+You've been there. Everyone has.
 
-You just built a new PC, or you are setting up a fresh Windows install, and you head to Gigabyte's support page to grab drivers. Fifteen downloads later, your Downloads folder is full of ZIP files. You open the first one. Inside: another ZIP. Or a RAR. You extract that. Now you have a setup.exe buried two folders deep alongside a pile of .sfv and .r00 files you do not need.
+You just built a new PC or you're setting up a fresh Windows install, so you head to Gigabyte's support page to grab drivers. Fifteen downloads later your Downloads folder is full of ZIP files. You open the first one. Inside: another ZIP. Or a RAR. You extract that too. Now you've got a setup.exe buried two folders deep alongside a pile of .sfv and .r00 files you don't need.
 
-Multiply that by fifteen. That is thirty manual extractions, fifteen rounds of "find the installer," and fifteen cleanup passes to get rid of the archive debris. It is tedious, repetitive, and exactly the kind of thing a script should handle.
+Multiply that by fifteen. That's thirty manual extractions, fifteen rounds of "find the installer," and fifteen cleanup passes to get rid of the archive junk. Tedious, repetitive, and exactly the kind of thing a script should handle.
 
-This is not just a motherboard driver problem. Firmware updates, game mods, driver packs, software collections -- anything distributed as nested archives hits the same wall. Double-wrapped ZIPs are everywhere.
+It's not just a motherboard driver problem either. Firmware updates, game mods, driver packs, software collections - anything distributed as nested archives hits the same wall. Double-wrapped ZIPs are everywhere.
 
 PeelX was built to make this a one-command operation:
 
@@ -117,7 +117,7 @@ PeelX was built to make this a one-command operation:
 peelx ~/Downloads/drivers/
 ```
 
-Every archive extracted. Every nested archive extracted. Every .sfv, .par2, .r00 file cleaned up. Every setup.exe found and presented in a clean interface so you can run them one by one.
+Every archive extracted. Every nested archive extracted. All the .sfv, .par2, and .r00 files cleaned up. Every setup.exe found and presented in a clean interface so you can run them one by one.
 
 ---
 
@@ -145,13 +145,13 @@ After extraction, PeelX launches an interactive curses-based UI with two display
 
 ### Full-Screen Preview Mode
 
-Press the right arrow key to expand the preview panel to full screen -- useful for reading longer NFO files. Press left arrow to return to split view.
+Press the right arrow key to expand the preview panel to full screen. Useful for reading longer NFO files. Press left arrow to go back to the split view.
 
 ### Key Features
 
-- **NFO/README auto-detection** -- Finds .nfo, .txt, .diz, and .readme files associated with each executable using priority-based matching (exact name match, common readme filenames, any info file in the same directory, parent directory search).
-- **Execution tracking** -- Executables you have already run are highlighted in green with an execution count. State is saved to `executions.log` so it persists across sessions.
-- **Multi-encoding support** -- Reads info files with UTF-8, Latin-1, CP437, CP1252, and ISO-8859-1 fallback so NFO art renders correctly.
+- **NFO/README auto-detection** - Finds .nfo, .txt, .diz, and .readme files associated with each executable. Uses priority-based matching: exact name match, common readme filenames, any info file in the same directory, then parent directory search.
+- **Execution tracking** - Executables you've already run show up highlighted in green with a run count. State saves to `executions.log` so it persists across sessions.
+- **Multi-encoding support** - Reads info files with UTF-8, Latin-1, CP437, CP1252, and ISO-8859-1 fallback so NFO art renders correctly.
 
 ---
 
@@ -201,7 +201,7 @@ peelx-build-exe
 python build_exe.py
 ```
 
-The build script installs any missing dependencies (PyInstaller, rarfile, py7zr, windows-curses) and produces a single-file executable at `dist/peelx.exe`. Must be run on Windows since PyInstaller builds for the current platform.
+The build script installs any missing dependencies (PyInstaller, rarfile, py7zr, windows-curses) and produces a single-file executable at `dist/peelx.exe`. Has to be run on Windows since PyInstaller builds for the current platform.
 
 ---
 
