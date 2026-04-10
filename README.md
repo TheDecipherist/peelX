@@ -205,6 +205,4 @@ The build script installs any missing dependencies (PyInstaller, rarfile, py7zr,
 
 ## License
 
-PeelX is released into the public domain under [The Unlicense](https://unlicense.org/).
-
-Do whatever you want with it. No attribution required.
+PeelX is released under the [MIT License](LICENSE).

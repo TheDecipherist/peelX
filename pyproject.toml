@@ -7,7 +7,7 @@ name = "peelx"
 version = "1.0.0"
 description = "Archive extractor and executable runner - scans directories, recursively extracts nested archives, and provides an interactive interface to run executables."
 readme = "README.md"
-license = "Unlicense"
+license = "MIT"
 requires-python = ">=3.6"
 authors = [
     { name = "TheDecipherist" },
