@@ -3,73 +3,79 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from archive_extractor import ArchiveExtractor
+import pytest
+from peelx import PeelX
 
-def test_split_detection():
-    """Test that split archives are detected correctly."""
-    print("Testing split archive detection...\n")
 
-    extractor = ArchiveExtractor('archives')
+@pytest.fixture
+def extractor():
+    return PeelX('archives', dry_run=True)
 
-    # Test files
-    test_files = [
-        'file.r00',
-        'file.r01',
-        'file.r99',
-        'archive.z01',
-        'data.001',
-        'data.002',
-        'package.7z.001',
-        'main.rar',
-        'test.zip',
-        'document.txt',
-        'program.exe'
-    ]
 
-    print("Testing _is_split_archive method:")
-    print("-" * 60)
-    for filename in test_files:
-        is_split = extractor._is_split_archive(filename)
-        status = "✓ SPLIT" if is_split else "  regular"
-        print(f"  {status}: {filename}")
+class TestSplitArchiveDetection:
+    """Tests for _is_split_archive() method."""
 
-    print("\n" + "-" * 60)
-    print("\nTesting _is_archive method (includes split archives):")
-    print("-" * 60)
-    for filename in test_files:
-        file_path = Path(filename)
-        is_archive = extractor._is_archive(file_path)
-        status = "✓ ARCHIVE" if is_archive else "  regular"
-        print(f"  {status}: {filename}")
+    @pytest.mark.parametrize("filename,expected", [
+        ("file.r00", True),
+        ("file.r01", True),
+        ("file.r99", True),
+        ("archive.z01", True),
+        ("archive.z02", True),
+        ("data.001", True),
+        ("data.002", True),
+        ("data.099", True),
+        ("package.7z.001", True),
+        ("package.7z.002", True),
+        ("main.rar", False),
+        ("test.zip", False),
+        ("document.txt", False),
+        ("program.exe", False),
+        ("file.r0", False),  # Too few digits
+    ])
+    def test_split_detection(self, extractor: PeelX, filename: str, expected: bool):
+        assert extractor._is_split_archive(filename) == expected
 
-    print("\n" + "=" * 60)
-    print("Testing with actual files in archives directory...")
-    print("=" * 60 + "\n")
 
-    folders = extractor.scan_directories()
+class TestArchiveDetection:
+    """Tests for _is_archive_or_metadata() and _is_extractable_archive()."""
 
-    for folder, has_archives in folders:
-        print(f"\n{folder.name}:")
-        print(f"  Has archives: {has_archives}")
+    @pytest.mark.parametrize("filename,expected", [
+        ("file.rar", True),
+        ("file.zip", True),
+        ("file.7z", True),
+        ("file.tar", True),
+        ("file.gz", True),
+        ("file.r00", True),   # Split part
+        ("file.r01", True),   # Split part
+        ("file.sfv", True),   # Metadata
+        ("checksums.md5", True),
+        ("hashes.sha1", True),
+        ("verify.sha256", True),
+        ("recovery.par2", True),
+        ("backup.crc", True),
+        ("readme.txt", False),  # Keep
+        ("info.nfo", False),    # Keep
+        ("program.exe", False),
+        ("image.jpg", False),
+    ])
+    def test_is_archive_or_metadata(self, extractor: PeelX, filename: str, expected: bool):
+        assert extractor._is_archive_or_metadata(Path(filename)) == expected
 
-        archives_found = []
-        for root, _, files in os.walk(folder):
-            for file in files:
-                file_path = Path(root) / file
-                if extractor._is_archive(file_path):
-                    archives_found.append(file)
+    @pytest.mark.parametrize("filename,expected", [
+        ("file.rar", True),
+        ("file.zip", True),
+        ("file.7z", True),
+        ("file.r00", False),  # Split part — should NOT be extracted
+        ("file.z01", False),  # Split part
+        ("file.001", False),  # Split part
+    ])
+    def test_is_extractable_archive(self, extractor: PeelX, filename: str, expected: bool):
+        assert extractor._is_extractable_archive(Path(filename)) == expected
 
-        if archives_found:
-            print(f"  Archives found ({len(archives_found)}):")
-            for archive in sorted(archives_found)[:10]:  # Show first 10
-                print(f"    - {archive}")
-            if len(archives_found) > 10:
-                print(f"    ... and {len(archives_found) - 10} more")
-        else:
-            print("  No archives found")
-
-if __name__ == '__main__':
-    import os
-    test_split_detection()
+    def test_backward_compat_is_archive(self, extractor: PeelX):
+        """_is_archive() should delegate to _is_archive_or_metadata()."""
+        test_file = Path("test.rar")
+        assert extractor._is_archive(test_file) == extractor._is_archive_or_metadata(test_file)

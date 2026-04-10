@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Archive Extractor now features clean progress indicators that show percentage completion (1-100%) during extraction and cleanup operations. This provides a better user experience with less terminal clutter.
+PeelX now features clean progress indicators that show percentage completion (1-100%) during extraction and cleanup operations. This provides a better user experience with less terminal clutter.
 
 ## Modes
 
@@ -24,7 +24,7 @@ Cleaning up: 50%
 
 **Usage:**
 ```bash
-python archive_extractor.py
+python peelx.py
 ```
 
 ### Debug Mode
@@ -46,7 +46,7 @@ Shows detailed file-by-file operations:
 
 **Usage:**
 ```bash
-python archive_extractor.py --debug
+python peelx.py --debug
 ```
 
 ## Visual Comparison
@@ -113,10 +113,10 @@ Cleaning up: 100% ✓
 
 ### Standard Operation (Normal Mode)
 ```bash
-$ python archive_extractor.py
+$ python peelx.py
 
 ============================================================
-  Archive Extractor and Executable Runner
+  PeelX - Archive Extractor and Executable Runner
 ============================================================
 
 Scanning directory: /home/user/archives
@@ -132,10 +132,10 @@ Done!
 
 ### Detailed Operation (Debug Mode)
 ```bash
-$ python archive_extractor.py --debug
+$ python peelx.py --debug
 
 ============================================================
-  Archive Extractor and Executable Runner
+  PeelX - Archive Extractor and Executable Runner
 ============================================================
 
 🐛 DEBUG MODE: Detailed output enabled
@@ -162,25 +162,25 @@ Done!
 
 ### Dry-Run with Normal Mode
 ```bash
-python archive_extractor.py --dry-run
+python peelx.py --dry-run
 # Shows: Extracting: 75% (but doesn't actually extract)
 ```
 
 ### Dry-Run with Debug Mode
 ```bash
-python archive_extractor.py --dry-run --debug
+python peelx.py --dry-run --debug
 # Shows: [75%] [DRY-RUN] Would extract: game.zip
 ```
 
 ### Backup with Progress
 ```bash
-python archive_extractor.py --backup
+python peelx.py --backup
 # Normal progress indicators during extraction and cleanup
 ```
 
 ### All Safety Features
 ```bash
-python archive_extractor.py --dry-run --backup --debug
+python peelx.py --dry-run --backup --debug
 # Preview mode + backups + detailed output
 ```
 

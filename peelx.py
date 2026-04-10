@@ -1,21 +1,31 @@
 #!/usr/bin/env python3
 """
-Archive Extractor and Executable Runner
+PeelX - Archive Extractor & Runner
 Scans directories, extracts nested archives, and provides an interface to run executables.
 """
 
 import os
 import sys
+import re
 import zipfile
 import tarfile
 import shutil
 import subprocess
 import platform
+import datetime
 from pathlib import Path
 from typing import List, Set, Tuple
 
+# Try importing interactive selector at module level so PyInstaller bundles it
+try:
+    from interactive_selector import select_executable_interactive
+    _HAS_INTERACTIVE = True
+except Exception as _e:
+    _HAS_INTERACTIVE = False
+    _INTERACTIVE_ERROR = str(_e)
 
-class ArchiveExtractor:
+
+class PeelX:
     """Handles scanning, extracting, and managing archives in directories."""
 
     # Supported archive extensions
@@ -66,8 +76,6 @@ class ArchiveExtractor:
         Returns list of (folder_path, has_archives) tuples.
         """
         if not self.base_dir.exists():
-            print(f"Creating directory: {self.base_dir}")
-            self.base_dir.mkdir(parents=True, exist_ok=True)
             return []
 
         folders = []
@@ -80,7 +88,6 @@ class ArchiveExtractor:
 
     def _is_split_archive(self, filename: str) -> bool:
         """Check if a file is a split archive part."""
-        import re
         filename_lower = filename.lower()
 
         # RAR split: .r00, .r01, .r02, etc.
@@ -105,7 +112,8 @@ class ArchiveExtractor:
         """Check if directory contains any archive files (recursively)."""
         for root, _, files in os.walk(directory):
             for file in files:
-                if any(file.lower().endswith(ext) for ext in self.ARCHIVE_EXTENSIONS):
+                file_path = Path(file)
+                if file_path.suffix.lower() in self.ARCHIVE_EXTENSIONS:
                     return True
                 if self._is_split_archive(file):
                     return True
@@ -118,8 +126,10 @@ class ArchiveExtractor:
         """
         filename = file_path.name
 
+        suffix = file_path.suffix.lower()
+
         # Check standard archive extensions
-        if any(str(file_path).lower().endswith(ext) for ext in self.ARCHIVE_EXTENSIONS):
+        if suffix in self.ARCHIVE_EXTENSIONS:
             return True
 
         # Check split archive patterns
@@ -127,7 +137,7 @@ class ArchiveExtractor:
             return True
 
         # Check archive metadata files (.sfv, .md5, etc.)
-        if any(str(file_path).lower().endswith(ext) for ext in self.ARCHIVE_METADATA_EXTENSIONS):
+        if suffix in self.ARCHIVE_METADATA_EXTENSIONS:
             return True
 
         return False
@@ -150,7 +160,7 @@ class ArchiveExtractor:
             return False
 
         # Extract standard archive files
-        return any(str(file_path).lower().endswith(ext) for ext in self.ARCHIVE_EXTENSIONS)
+        return file_path.suffix.lower() in self.ARCHIVE_EXTENSIONS
 
     def extract_archive(self, archive_path: Path, extract_to: Path) -> bool:
         """
@@ -162,6 +172,11 @@ class ArchiveExtractor:
         try:
             if archive_str.endswith('.zip'):
                 with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+                    # Validate all members to prevent zip-slip path traversal
+                    for member in zip_ref.namelist():
+                        member_path = (extract_to / member).resolve()
+                        if not str(member_path).startswith(str(extract_to.resolve())):
+                            raise Exception(f"Path traversal detected in zip member: {member}")
                     zip_ref.extractall(extract_to)
                 return True
 
@@ -201,6 +216,11 @@ class ArchiveExtractor:
 
             elif archive_str.endswith(('.tar', '.tar.gz', '.tgz', '.tar.bz2', '.tbz2', '.tar.xz')):
                 with tarfile.open(archive_path, 'r:*') as tar_ref:
+                    # Validate all members to prevent path traversal (CVE-2007-4559)
+                    for member in tar_ref.getmembers():
+                        member_path = (extract_to / member.name).resolve()
+                        if not str(member_path).startswith(str(extract_to.resolve())):
+                            raise Exception(f"Path traversal detected in tar member: {member.name}")
                     tar_ref.extractall(extract_to)
                 return True
 
@@ -231,7 +251,7 @@ class ArchiveExtractor:
     def _extract_with_unrar(self, archive_path: Path, extract_to: Path) -> bool:
         """Attempt to extract RAR using system unrar command."""
         try:
-            result = subprocess.run(['unrar', 'x', '-y', str(archive_path), str(extract_to) + os.sep],
+            subprocess.run(['unrar', 'x', '-y', str(archive_path), str(extract_to) + os.sep],
                          check=True, capture_output=True, text=True)
             return True
         except FileNotFoundError:
@@ -245,7 +265,7 @@ class ArchiveExtractor:
     def _extract_with_7z(self, archive_path: Path, extract_to: Path) -> bool:
         """Attempt to extract 7z using system 7z command."""
         try:
-            result = subprocess.run(['7z', 'x', f'-o{extract_to}', str(archive_path), '-y'],
+            subprocess.run(['7z', 'x', f'-o{extract_to}', str(archive_path), '-y'],
                          check=True, capture_output=True, text=True)
             return True
         except FileNotFoundError:
@@ -321,8 +341,6 @@ class ArchiveExtractor:
         Create backup of all archive files before deletion.
         Returns count of backed up files.
         """
-        import datetime
-
         backup_count = 0
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         folder_backup = backup_dir / f"{directory.name}_{timestamp}"
@@ -400,17 +418,30 @@ class ArchiveExtractor:
 
         return deleted_count
 
+    def _is_wsl(self) -> bool:
+        """Detect if running under Windows Subsystem for Linux."""
+        try:
+            return os.path.exists('/proc/version') and 'microsoft' in Path('/proc/version').read_text().lower()
+        except Exception:
+            return False
+
     def find_executables(self, directory: Path) -> List[Path]:
         """Find all executable files in the directory."""
         executables = []
         platform_exts = self.EXECUTABLE_EXTENSIONS.get(self.current_platform, set())
 
+        # On WSL, also look for Windows executables
+        if self.current_platform == 'Linux' and self._is_wsl():
+            platform_exts = platform_exts | self.EXECUTABLE_EXTENSIONS.get('Windows', set())
+
         for root, _, files in os.walk(directory):
             for file in files:
                 file_path = Path(root) / file
 
+                suffix = file_path.suffix.lower()
+
                 # Skip known non-executable extensions
-                if any(str(file_path).lower().endswith(ext) for ext in self.NON_EXECUTABLE_EXTENSIONS):
+                if suffix in self.NON_EXECUTABLE_EXTENSIONS:
                     continue
 
                 # Skip archive files
@@ -418,7 +449,7 @@ class ArchiveExtractor:
                     continue
 
                 # Check by extension
-                if any(str(file_path).lower().endswith(ext) for ext in platform_exts if ext):
+                if suffix in platform_exts and suffix:
                     executables.append(file_path)
                 # Check by execute permission (Unix-like systems)
                 elif self.current_platform in ['Linux', 'Darwin']:
@@ -435,26 +466,43 @@ class ArchiveExtractor:
             print(f"{'='*60}\n")
 
             # Check if we're in WSL (Windows Subsystem for Linux)
-            is_wsl = os.path.exists('/proc/version') and 'microsoft' in open('/proc/version').read().lower()
+            is_wsl = self._is_wsl()
 
             # Detect Windows executable extensions
             windows_exts = {'.exe', '.bat', '.cmd', '.msi'}
             is_windows_exe = executable_path.suffix.lower() in windows_exts
 
             if self.current_platform == 'Windows':
-                subprocess.run([str(executable_path)], cwd=executable_path.parent)
+                abs_path = executable_path.resolve()
+                try:
+                    subprocess.run([str(abs_path)], cwd=str(abs_path.parent))
+                except (PermissionError, OSError) as e:
+                    # WinError 740: elevation required - retry with runas
+                    if getattr(e, 'winerror', None) == 740:
+                        print("  Requesting administrator privileges...")
+                        import ctypes
+                        ctypes.windll.shell32.ShellExecuteW(
+                            None, "runas", str(abs_path), None,
+                            str(abs_path.parent), 1
+                        )
+                    else:
+                        raise
             elif is_wsl and is_windows_exe:
                 # In WSL, convert Linux path to Windows path and run with cmd.exe
                 print("  ℹ Detected WSL environment - converting path for Windows execution")
 
+                # Convert to absolute path first
+                abs_path = executable_path.resolve()
+                abs_cwd = abs_path.parent
+
                 # Convert /mnt/c/path to C:\path
-                win_path = str(executable_path)
+                win_path = str(abs_path)
                 if win_path.startswith('/mnt/'):
                     drive = win_path[5].upper()
                     win_path = f"{drive}:{win_path[6:]}".replace('/', '\\')
 
                 # Get working directory in Windows format
-                win_cwd = str(executable_path.parent)
+                win_cwd = str(abs_cwd)
                 if win_cwd.startswith('/mnt/'):
                     drive = win_cwd[5].upper()
                     win_cwd = f"{drive}:{win_cwd[6:]}".replace('/', '\\')
@@ -477,7 +525,7 @@ class ArchiveExtractor:
 def print_header():
     """Print application header."""
     print("\n" + "="*60)
-    print("  Archive Extractor and Executable Runner")
+    print("  PeelX - Archive Extractor & Runner")
     print("="*60 + "\n")
 
 
@@ -564,9 +612,8 @@ def select_executable(executables: List[Path], base_dir: Path, use_interactive: 
         return None
 
     # Try interactive mode first
-    if use_interactive:
+    if use_interactive and _HAS_INTERACTIVE:
         try:
-            from interactive_selector import select_executable_interactive
             print("\n" + "="*60)
             print("Starting Interactive Selector...")
             print("Use ↑/↓ arrow keys to navigate, ENTER to select, q to quit")
@@ -582,11 +629,12 @@ def select_executable(executables: List[Path], base_dir: Path, use_interactive: 
             print("Exited interactive mode")
             print("="*60)
             return None
-        except ImportError:
-            print("\n⚠ Interactive mode not available, using simple selection")
         except Exception as e:
             print(f"\n⚠ Interactive mode failed: {e}")
             print("Using simple selection instead...")
+    elif use_interactive and not _HAS_INTERACTIVE:
+        print(f"\n⚠ Interactive mode not available: {_INTERACTIVE_ERROR}")
+        print("Using simple selection")
 
     # Fallback: Simple text-based selection
     print("\n" + "="*60)
@@ -626,7 +674,7 @@ def main():
     """Main application entry point."""
     import argparse
 
-    parser = argparse.ArgumentParser(description='Archive Extractor and Executable Runner')
+    parser = argparse.ArgumentParser(description='PeelX - Archive Extractor & Runner')
     parser.add_argument('directory', nargs='?', default='archives',
                        help='Directory to scan (default: archives)')
     parser.add_argument('--dry-run', action='store_true',
@@ -650,7 +698,38 @@ def main():
         print("🐛 DEBUG MODE: Detailed output enabled")
         print("="*60 + "\n")
 
-    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run, debug=args.debug)
+    target_dir = args.directory
+    user_specified_dir = target_dir != 'archives'
+
+    # If using default 'archives' dir and it doesn't exist, ask the user
+    if not user_specified_dir and not Path(target_dir).exists():
+        print("No 'archives' folder found in the current directory.\n")
+        print("What would you like to do?")
+        print("-" * 60)
+        print("  [1] Create an 'archives' folder (put your archives there)")
+        print("  [2] Scan the current directory instead")
+        print("  [0] Exit")
+        print("-" * 60)
+
+        while True:
+            try:
+                choice = input("\nSelect an option: ").strip()
+                if choice == '1':
+                    Path(target_dir).mkdir(parents=True, exist_ok=True)
+                    print(f"\nCreated '{target_dir}' folder.")
+                    print("Add your archive folders there and run this again.")
+                    return
+                elif choice == '2':
+                    target_dir = '.'
+                    break
+                elif choice == '0':
+                    return
+                else:
+                    print("Please enter 1, 2, or 0.")
+            except (EOFError, KeyboardInterrupt):
+                return
+
+    extractor = PeelX(target_dir, dry_run=args.dry_run, debug=args.debug)
 
     print(f"Scanning directory: {extractor.base_dir.absolute()}\n")
 

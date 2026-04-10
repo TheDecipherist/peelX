@@ -4,26 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Archive Extractor is a Python utility that scans directories, recursively extracts nested archives, and provides an interactive interface to run executables. It's designed for handling software releases that come packaged in nested archive formats (common in scene releases).
+PeelX is a Python utility that scans directories, recursively extracts nested archives, and provides an interactive interface to run executables. It's designed for handling software releases that come packaged in nested archive formats (common in scene releases).
 
 ## Running and Testing
 
 ### Basic Usage
 ```bash
 # Interactive mode (default) - extracts archives and shows interactive selector
-python archive_extractor.py
+python peelx.py
 
 # Auto mode - processes all folders without prompts
-python archive_extractor_auto.py
+python peelx_auto.py
 
 # Preview mode (recommended for testing changes)
-python archive_extractor.py --dry-run
+python peelx.py --dry-run
 
 # Debug mode with detailed output
-python archive_extractor.py --debug
+python peelx.py --debug
 
 # Disable interactive selector (use simple text menu)
-python archive_extractor.py --no-interactive
+python peelx.py --no-interactive
 ```
 
 ### Testing
@@ -42,9 +42,9 @@ python create_example.py
 
 ## Architecture
 
-### Core Class: ArchiveExtractor (archive_extractor.py)
+### Core Class: PeelX (peelx.py)
 
-The `ArchiveExtractor` class is the heart of the application:
+The `PeelX` class is the heart of the application:
 
 - **Scanning**: `scan_directories()` finds folders containing archives
 - **Archive Detection**:
@@ -73,12 +73,12 @@ The `InteractiveSelector` class provides a dual-mode curses-based UI:
 
 ### Entry Points
 
-- `archive_extractor.py` - Main interactive workflow with user prompts
-- `archive_extractor_auto.py` - Automatic processing without prompts (imports ArchiveExtractor class)
+- `peelx.py` - Main interactive workflow with user prompts
+- `peelx_auto.py` - Automatic processing without prompts (imports PeelX class)
 
 ### Platform-Specific Handling
 
-**WSL Detection** (archive_extractor.py:438-467):
+**WSL Detection** (peelx.py:438-467):
 - Detects WSL by checking `/proc/version` for 'microsoft'
 - Converts Linux paths (`/mnt/c/`) to Windows paths (`C:\`)
 - Runs Windows executables using `cmd.exe /c` from WSL
@@ -123,7 +123,7 @@ The `InteractiveSelector` class provides a dual-mode curses-based UI:
 
 Always use `--dry-run` flag when testing deletion/extraction logic:
 ```bash
-python archive_extractor.py --dry-run --debug
+python peelx.py --dry-run --debug
 ```
 
 This shows what would happen without modifying files.
@@ -144,7 +144,7 @@ This shows what would happen without modifying files.
 
 ### Run tests without modifying files
 ```bash
-python archive_extractor.py --dry-run --debug
+python peelx.py --dry-run --debug
 ```
 
 ### Create test data

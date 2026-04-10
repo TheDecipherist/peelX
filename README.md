@@ -1,270 +1,208 @@
-# Archive Extractor and Executable Runner
+# PeelX
 
-A Python utility that scans directories, recursively extracts nested archives, and provides an interface to run executables.
+**Recursively extract nested archives and run every installer -- one command, zero hassle.**
+
+---
+
+## How It Works
+
+```
+BEFORE                                    AFTER
+downloads/                                downloads/
+  Gigabyte_LAN_Driver.zip                   Gigabyte_LAN_Driver/
+    -> LAN_Driver_v2.1.rar                    setup.exe
+        -> setup.exe                          readme.nfo
+        -> readme.nfo                       ASUS_Audio_v6.0/
+  ASUS_Audio_v6.0.zip                         install.exe
+    -> audio_driver.zip                       release.txt
+        -> install.exe                      MSI_BIOS_Update/
+        -> release.txt                        flash.exe
+  MSI_BIOS_Update.7z                          info.nfo
+    -> bios_v1.4.rar
+        -> flash.exe
+        -> info.nfo
+
+  15 archives, nested 2-3 deep              Clean folders, ready to run
+  + .sfv, .par2, .r00-.r99 clutter          All archives and junk removed
+```
+
+One command:
+
+```
+peelx downloads/
+```
+
+PeelX extracts every archive (including archives inside archives), cleans up all the leftover archive files, and drops you into an interactive selector where you can run each executable in sequence.
+
+---
 
 ## Features
 
-- Scans a base directory for folders containing archives
-- Supports multiple archive formats: ZIP, RAR, 7Z, TAR, GZ, BZ2, XZ, TGZ, TBZ2
-- Recursively extracts nested archives (archives within archives)
-- Interactive folder selection
-- Automatic cleanup of archive files after extraction
-- Cross-platform executable detection and running
-- Clean command-line interface
+**Recursive nested extraction** -- Archives within archives within archives. PeelX keeps extracting until there is nothing left to unpack, up to 50 levels deep.
 
-## Requirements
+**Split archive support** -- Handles multi-part archives (.r00-.r99, .z01-.z99, .001-.999, .7z.001, etc.) automatically. Extracts from the main archive file and cleans up every split part.
 
-### Core Requirements
-- Python 3.6 or higher
-- Standard library modules (included with Python):
-  - `zipfile` (for ZIP files)
-  - `tarfile` (for TAR files)
-  - `gzip` (for GZ files)
-  - `bz2` (for BZ2 files)
+**Interactive executable selector** -- After extraction, a curses-based interface shows every executable found across all extracted folders. Navigate with arrow keys, preview NFO/README files in a side panel, run installers directly, and track which ones you have already executed.
 
-### Optional Dependencies
+**Automatic cleanup** -- Removes all archive files, split parts, checksums (.sfv, .md5, .sha1, .sha256, .crc), and parity files (.par2) after extraction. NFO files and extracted content are preserved.
 
-For RAR files:
-```bash
-pip install rarfile
-```
-Or install `unrar` system utility
+**Cross-platform** -- Windows, Linux, macOS, and WSL. On WSL, PeelX auto-detects the environment and converts paths so Windows executables launch correctly.
 
-For 7Z files:
-```bash
-pip install py7zr
-```
-Or install `7z` system utility
+**Safety first** -- Dry-run mode previews every action without touching files. Backup mode copies archives before deletion. A hard limit of 50 extraction iterations prevents runaway loops.
 
-### Quick Install
-```bash
-pip install -r requirements.txt
-```
+---
 
-## Usage
+## Installation
 
-### Basic Usage
-
-1. Create an `archives` directory in the same location as the script
-2. Add folders containing archives to the `archives` directory
-3. Run the script:
+### From PyPI (recommended)
 
 ```bash
-python archive_extractor.py
+# Core install (ZIP, TAR, GZ, BZ2, XZ support built-in)
+pip install peelx
+
+# Full install with RAR and 7z support
+pip install peelx[all]
 ```
 
-### Test Mode (Recommended for Development)
+### Windows Standalone
 
-**Preview what will happen without modifying files:**
-```bash
-python archive_extractor.py --dry-run
-```
+Download `peelx.exe` from the [Releases](https://github.com/TheDecipherist/PeelX/releases) page. No Python required -- just drop it in your PATH or run it directly.
 
-**Create backups before deleting archives:**
-```bash
-python archive_extractor.py --backup
-```
-
-**Enable detailed output (debug mode):**
-```bash
-python archive_extractor.py --debug
-```
-
-By default, the program shows clean progress indicators (1-100%). Use `--debug` to see detailed file names during extraction and cleanup.
-
-See [TEST_MODE.md](TEST_MODE.md) for detailed test mode documentation.
-
-### Custom Directory
-
-You can specify a custom directory to scan:
+### From Source
 
 ```bash
-python archive_extractor.py /path/to/your/directory
+git clone https://github.com/TheDecipherist/PeelX.git
+cd PeelX
+pip install -e .[all]
+peelx
 ```
 
-### Workflow
+---
 
-The script follows this workflow:
+## Quick Start
 
-1. **Scan**: Scans the base directory for folders
-2. **Select**: Shows folders containing archives and lets you select which to process
-3. **Extract**: Recursively extracts all archives (including nested ones)
-4. **Cleanup**: Deletes all archive files, keeping extracted content
-5. **Run**: Interactive selector with NFO/TXT preview to choose and run executables
-
-### Interactive Executable Selector
-
-The program features an interactive cursor-based interface for selecting executables:
-
-**Features:**
-- **Dual-mode interface** - Split-screen and full-screen preview modes
-- **Full-screen preview** - Press → to expand preview to full terminal width
-- **Scrollable preview** - Read long NFO/TXT files with full scroll support
-- **Execution tracking** - Track which executables you've run (shown in GREEN with count)
-- **Live NFO/TXT preview** - Shows readme/info files automatically
-- **Automatic file detection** - Finds .nfo, .txt, .diz files near executables
-
-**Keyboard shortcuts:**
-- **Split-Screen**: `↑/↓` Navigate | `→` Full preview | `Enter` Run
-- **Full-Screen Preview**: `↑/↓` Scroll | `←` Back to split | `PgUp/PgDn` Jump
-- **Both Modes**: `Home/End` Jump to start/end | `Q/ESC` Quit
-
-**Execution tracking:**
-- Previously run executables shown in GREEN
-- Execution count displayed: (2x), (5x), etc.
-- Log saved to `executions.log`
-
-**Disable interactive mode:**
 ```bash
-python archive_extractor.py --no-interactive
+# Run in the current directory
+peelx .
+
+# Run against a specific folder
+peelx ~/Downloads/drivers/
+
+# Preview what would happen (no files modified)
+peelx ~/Downloads/drivers/ --dry-run
+
+# Detailed output showing every file
+peelx ~/Downloads/drivers/ --debug
 ```
 
-## Example Directory Structure
+That is it. PeelX scans the target directory, finds every folder containing archives, extracts recursively, cleans up, and launches the interactive selector.
 
-```
-archives/
-├── game1/
-│   ├── game.zip          # Will be extracted and deleted
-│   └── (extracted files)
-├── game2/
-│   ├── setup.rar         # Will be extracted and deleted
-│   │   └── installer.exe # (nested, will be extracted)
-│   └── (extracted files)
-└── tool/
-    └── tool.exe          # No archive, folder left unchanged
-```
+---
 
-## Supported Archive Formats
+## Why PeelX?
 
-- **.zip** - ZIP archives
-- **.rar** - RAR archives (requires rarfile or unrar)
-- **.7z** - 7-Zip archives (requires py7zr or 7z command)
-- **.tar** - TAR archives
-- **.tar.gz, .tgz** - Gzipped TAR archives
-- **.tar.bz2, .tbz2** - Bzipped TAR archives
-- **.tar.xz** - XZ compressed TAR archives
-- **.gz** - Gzip files
-- **.bz2** - Bzip2 files
+You have been there. Everyone has been there.
 
-## Supported Executable Types
+You just built a new PC, or you are setting up a fresh Windows install, and you head to Gigabyte's support page to grab drivers. Fifteen downloads later, your Downloads folder is full of ZIP files. You open the first one. Inside: another ZIP. Or a RAR. You extract that. Now you have a setup.exe buried two folders deep alongside a pile of .sfv and .r00 files you do not need.
 
-### Windows
-- .exe
-- .bat
-- .cmd
-- .msi
+Multiply that by fifteen. That is thirty manual extractions, fifteen rounds of "find the installer," and fifteen cleanup passes to get rid of the archive debris. It is tedious, repetitive, and exactly the kind of thing a script should handle.
 
-### Linux
-- .sh
-- .bin
-- .run
-- Any file with execute permissions
+This is not just a motherboard driver problem. Firmware updates, game mods, driver packs, software collections -- anything distributed as nested archives hits the same wall. Double-wrapped ZIPs are everywhere.
 
-### macOS
-- .app
-- .sh
-- .command
-- Any file with execute permissions
+PeelX was built to make this a one-command operation:
 
-### WSL (Windows Subsystem for Linux)
-- **Automatic detection** - Detects WSL environment automatically
-- **Windows executables** - Runs .exe, .bat, .cmd files through Windows
-- **Path conversion** - Converts `/mnt/c/` paths to `C:\` automatically
-- **Native execution** - Uses `cmd.exe` to run Windows programs from WSL
-
-## Notes
-
-- Archives are extracted to their parent directory
-- The script handles nested archives automatically (up to 50 levels deep)
-- If extraction fails for an archive, it will be skipped
-- Folders without archives are left unchanged
-- The script runs executables from their parent directory
-
-### What Gets Deleted
-
-After successful extraction, the following files are deleted:
-- **Archive files**: `.zip`, `.rar`, `.7z`, `.tar`, `.gz`, `.bz2`, etc.
-- **Split archive parts**: `.r00`, `.r01`, `.z01`, `.001`, `.002`, etc.
-- **Checksum files**: `.sfv`, `.md5`, `.sha1`, `.sha256`, `.crc`
-- **Parity files**: `.par`, `.par2`
-
-### What Gets Kept
-
-These files are preserved after extraction:
-- **Info files**: `.nfo`, `.txt`, `.diz`
-- **Extracted content**: All files extracted from archives
-- **Executables**: `.exe`, `.bat`, `.sh`, etc.
-
-## Command-Line Options
-
-### Basic Options
 ```bash
-python archive_extractor.py [directory]        # Specify directory (default: archives)
-python archive_extractor.py --help             # Show all options
+peelx ~/Downloads/drivers/
 ```
 
-### Testing & Safety
+Every archive extracted. Every nested archive extracted. Every .sfv, .par2, .r00 file cleaned up. Every setup.exe found and presented in a clean interface so you can run them one by one.
+
+---
+
+## Interactive Selector
+
+After extraction, PeelX launches an interactive curses-based UI with two display modes:
+
+### Split-Screen Mode (default)
+
+```
++-------------------------------------------+------------------------+
+|  EXECUTABLES                              |  PREVIEW               |
+|                                           |                        |
+|  [ ] Gigabyte_LAN/setup.exe              |  Release: LAN Driver   |
+|  [*] ASUS_Audio/install.exe   (ran 1x)   |  Version: 6.0.1.8     |
+|  [ ] MSI_BIOS/flash.exe                  |  Date: 2025-03-15     |
+|  [ ] Realtek_WiFi/setup.exe              |                        |
+|  [*] NVIDIA_Driver/setup.exe  (ran 1x)   |  Install Notes:        |
+|                                           |  Run as administrator  |
+|                                           |  Reboot after install  |
++-------------------------------------------+------------------------+
+|  Up/Down: Navigate | Enter: Run | q: Quit | Right: Full preview   |
++-------------------------------------------+------------------------+
+```
+
+### Full-Screen Preview Mode
+
+Press the right arrow key to expand the preview panel to full screen -- useful for reading longer NFO files. Press left arrow to return to split view.
+
+### Key Features
+
+- **NFO/README auto-detection** -- Finds .nfo, .txt, .diz, and .readme files associated with each executable using priority-based matching (exact name match, common readme filenames, any info file in the same directory, parent directory search).
+- **Execution tracking** -- Executables you have already run are highlighted in green with an execution count. State is saved to `executions.log` so it persists across sessions.
+- **Multi-encoding support** -- Reads info files with UTF-8, Latin-1, CP437, CP1252, and ISO-8859-1 fallback so NFO art renders correctly.
+
+---
+
+## Supported Formats
+
+| Format | Extensions | Notes |
+|--------|-----------|-------|
+| ZIP | .zip | Built-in, no dependencies |
+| TAR | .tar, .tgz, .tbz2 | Built-in, no dependencies |
+| GZ | .gz | Built-in, no dependencies |
+| BZ2 | .bz2 | Built-in, no dependencies |
+| XZ | .xz | Built-in, no dependencies |
+| RAR | .rar, .r00-.r99 | Requires `rarfile` package or system `unrar` |
+| 7z | .7z, .7z.001+ | Requires `py7zr` package or system `7z` |
+
+Split archive variants (.r00, .r01, .z01, .z02, .001, .002, etc.) are all detected and handled automatically.
+
+---
+
+## CLI Options
+
+```
+peelx [directory] [options]
+
+Positional:
+  directory              Directory to scan (default: archives)
+
+Options:
+  --dry-run              Preview all actions without extracting or deleting
+  --backup               Create backup copies before deleting archives
+  --no-interactive       Use simple text menu instead of curses UI
+  --debug                Show detailed output with individual file names
+  -h, --help             Show help message
+```
+
+---
+
+## Building a Windows Executable
+
+PeelX includes a build script that packages everything into a standalone `.exe` using PyInstaller:
+
 ```bash
---dry-run           # Preview actions without modifying files
---backup            # Create backups before deleting archives
---debug             # Show detailed file names (default: progress %)
---no-interactive    # Use simple text menu instead of curses UI
+# If installed via pip
+peelx-build-exe
+
+# Or from source
+python build_exe.py
 ```
 
-### Examples
-```bash
-# Clean progress display (default)
-python archive_extractor.py
+The build script installs any missing dependencies (PyInstaller, rarfile, py7zr, windows-curses) and produces a single-file executable at `dist/peelx.exe`. Must be run on Windows since PyInstaller builds for the current platform.
 
-# See detailed file operations
-python archive_extractor.py --debug
-
-# Test before running for real
-python archive_extractor.py --dry-run
-
-# Safe mode with backups
-python archive_extractor.py --backup
-
-# Custom directory with debug output
-python archive_extractor.py /path/to/archives --debug
-```
-
-## Safety Features
-
-- Only processes folders you explicitly select
-- Archives are only deleted after successful extraction
-- Maximum iteration limit prevents infinite loops with circular archive references
-- Clean progress indicators by default (use `--debug` for details)
-- Dry-run mode to preview changes before applying
-
-## Troubleshooting
-
-### RAR files won't extract
-Install either:
-```bash
-pip install rarfile
-```
-Or the system `unrar` utility:
-- Ubuntu/Debian: `sudo apt-get install unrar`
-- macOS: `brew install unrar`
-- Windows: Download from rarlab.com
-
-### 7Z files won't extract
-Install either:
-```bash
-pip install py7zr
-```
-Or the system `7z` utility:
-- Ubuntu/Debian: `sudo apt-get install p7zip-full`
-- macOS: `brew install p7zip`
-- Windows: Download from 7-zip.org
-
-### Executable won't run on Linux/macOS
-The script attempts to set execute permissions automatically, but you may need to do it manually:
-```bash
-chmod +x /path/to/executable
-```
+---
 
 ## License
 
-This is free and unencumbered software released into the public domain.
+PeelX is released under the [MIT License](LICENSE).

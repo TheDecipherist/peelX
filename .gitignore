@@ -8,6 +8,8 @@ __pycache__/
 dist/
 build/
 
+.pypirc
+
 # Virtual Environment
 venv/
 env/
@@ -23,6 +25,9 @@ archives/.backups/
 
 # Execution logs
 executions.log
+
+# PyInstaller
+*.spec
 
 # IDE
 .vscode/
@@ -42,5 +47,17 @@ executions.log
 *.tbz2
 
 
+# MDD working files (audits, notes — docs are committed)
+.mdd/audits/
+.mdd/.startup.md
+
+# Claude local config
+.claude/
+
 # Logs
 *.log
+
+archives_copy/
+
+# Temporary AI research files
+_ai_temp/

@@ -6,44 +6,44 @@
 
 ```bash
 # Basic usage (with interactive selector)
-python archive_extractor.py
+python peelx.py
 
 # Disable interactive selector
-python archive_extractor.py --no-interactive
+python peelx.py --no-interactive
 
 # Preview without changes (recommended first)
-python archive_extractor.py --dry-run
+python peelx.py --dry-run
 
 # Create backups before deleting
-python archive_extractor.py --backup
+python peelx.py --backup
 
 # Custom directory
-python archive_extractor.py /path/to/directory
+python peelx.py /path/to/directory
 
 # Combine options
-python archive_extractor.py --dry-run --backup --no-interactive
+python peelx.py --dry-run --backup --no-interactive
 ```
 
 ### Automatic Mode
 
 ```bash
 # Process all folders automatically
-python archive_extractor_auto.py
+python peelx_auto.py
 
 # Preview only (dry-run)
-python archive_extractor_auto.py --dry-run
+python peelx_auto.py --dry-run
 
 # Create backups
-python archive_extractor_auto.py --backup
+python peelx_auto.py --backup
 
 # Keep archives (don't delete)
-python archive_extractor_auto.py --no-delete
+python peelx_auto.py --no-delete
 
 # List folders only (no extraction)
-python archive_extractor_auto.py --list-only
+python peelx_auto.py --list-only
 
 # Skip executable running
-python archive_extractor_auto.py --no-run
+python peelx_auto.py --no-run
 ```
 
 ### Restore Backups
@@ -81,10 +81,10 @@ python test_scanner.py
 
 ```bash
 # 1. Preview first
-python archive_extractor_auto.py --dry-run
+python peelx_auto.py --dry-run
 
 # 2. If looks good, run with backup
-python archive_extractor_auto.py --backup
+python peelx_auto.py --backup
 
 # 3. If fails, restore
 python restore_backup.py --latest
@@ -94,22 +94,22 @@ python restore_backup.py --latest
 
 ```bash
 # Extract and clean up
-python archive_extractor.py
+python peelx.py
 ```
 
 ### Safe Mode
 
 ```bash
 # Extract but keep archives
-python archive_extractor_auto.py --no-delete
+python peelx_auto.py --no-delete
 ```
 
 ## File Structure
 
 ```
-archive_extractor/
-├── archive_extractor.py          # Main interactive program
-├── archive_extractor_auto.py     # Automatic batch mode
+peelx/
+├── peelx.py                       # Main interactive program
+├── peelx_auto.py                  # Automatic batch mode
 ├── restore_backup.py              # Restore tool
 ├── check_dependencies.py          # Dependency checker
 ├── create_example.py              # Create test archives
@@ -182,10 +182,10 @@ archive_extractor/
 
 ```bash
 # Main program help
-python archive_extractor.py --help
+python peelx.py --help
 
 # Auto mode help
-python archive_extractor_auto.py --help
+python peelx_auto.py --help
 
 # Restore tool help
 python restore_backup.py --help

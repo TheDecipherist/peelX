@@ -9,7 +9,7 @@
 
 2. Run the extractor:
    ```bash
-   python archive_extractor.py
+   python peelx.py
    ```
 
 3. Follow the prompts:
@@ -34,7 +34,7 @@
 
 3. Run the script:
    ```bash
-   python archive_extractor.py
+   python peelx.py
    ```
 
 4. Select folders to process, and the script will:
@@ -47,7 +47,7 @@
 To use a different directory instead of `archives`:
 
 ```bash
-python archive_extractor.py /path/to/your/directory
+python peelx.py /path/to/your/directory
 ```
 
 ## Install Optional Dependencies

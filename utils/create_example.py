@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Creates example archives to demonstrate the archive_extractor.py functionality.
+Creates example archives to demonstrate the peelx.py functionality.
 Run this script to set up a test environment.
 """
 
@@ -108,7 +108,7 @@ input("Press Enter to exit...")
     print("Example structure created successfully!")
     print("=" * 60)
     print("\nYou can now run:")
-    print("  python archive_extractor.py")
+    print("  python peelx.py")
     print("\nThis will demonstrate:")
     print("  1. Extracting a simple ZIP file")
     print("  2. Extracting nested archives (ZIP in ZIP)")

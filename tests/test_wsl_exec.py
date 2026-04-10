@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 # Test path
-test_path = Path("/mnt/c/ai_projects/archive_extractor/archives/Minimal.Audio.Current.v2.0.1.Incl.Keygen.READ.NFO-R2R/Setup Current v2.0.1.exe")
+test_path = Path("/mnt/c/ai_projects/PeelX/archives/Minimal.Audio.Current.v2.0.1.Incl.Keygen.READ.NFO-R2R/Setup Current v2.0.1.exe")
 
 print("Test WSL Path Conversion")
 print("="*60)

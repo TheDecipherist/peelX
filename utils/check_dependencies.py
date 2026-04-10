@@ -33,7 +33,7 @@ def check_python_library(library_name):
 def main():
     """Check all dependencies."""
     print("="*60)
-    print("  Archive Extractor - Dependency Check")
+    print("  PeelX - Dependency Check")
     print("="*60 + "\n")
 
     # Check Python version
