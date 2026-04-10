@@ -2,7 +2,7 @@
 
 ## Required Tools for RAR and 7Z Support
 
-The archive extractor needs external tools to handle RAR and 7Z files properly, especially split archives and files with advanced compression.
+PeelX needs external tools to handle RAR and 7Z files properly, especially split archives and files with advanced compression.
 
 ### Ubuntu/Debian/WSL
 

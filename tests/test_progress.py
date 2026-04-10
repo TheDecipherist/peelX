@@ -95,8 +95,8 @@ def main():
     print("Demo Complete!")
     print("="*60)
     print("\nUsage:")
-    print("  python archive_extractor.py              # Normal mode (clean)")
-    print("  python archive_extractor.py --debug      # Debug mode (detailed)")
+    print("  python peelx.py              # Normal mode (clean)")
+    print("  python peelx.py --debug      # Debug mode (detailed)")
     print()
 
 if __name__ == '__main__':

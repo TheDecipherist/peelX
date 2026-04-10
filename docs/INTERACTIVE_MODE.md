@@ -31,7 +31,7 @@ The interactive selector has **two display modes**:
 #### Full-Screen Preview Mode (Press → to enter)
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│         Archive Extractor - Preview Mode (Full Screen)             │
+│         PeelX - Preview Mode (Full Screen)             │
 │                                                                    │
 │  File: Tool/setup.exe | readme.nfo | Lines: 1-25/150              │
 │                                                                    │
@@ -140,7 +140,7 @@ The log is automatically updated each time you select and run an executable.
 ### Enable Interactive Mode (Default)
 
 ```bash
-python archive_extractor.py
+python peelx.py
 ```
 
 The interactive selector will launch automatically when executables are found.
@@ -148,7 +148,7 @@ The interactive selector will launch automatically when executables are found.
 ### Disable Interactive Mode
 
 ```bash
-python archive_extractor.py --no-interactive
+python peelx.py --no-interactive
 ```
 
 Uses simple numbered menu instead.

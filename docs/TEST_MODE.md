@@ -2,7 +2,7 @@
 
 ## Overview
 
-The archive extractor includes safety features to help you test and recover from failed extractions:
+PeelX includes safety features to help you test and recover from failed extractions:
 
 1. **Dry-Run Mode** - Preview what will happen without modifying any files
 2. **Backup Mode** - Create backups before deleting archives
@@ -16,12 +16,12 @@ Preview all actions without actually extracting or deleting anything.
 
 **Interactive Mode:**
 ```bash
-python archive_extractor.py --dry-run
+python peelx.py --dry-run
 ```
 
 **Automatic Mode:**
 ```bash
-python archive_extractor_auto.py --dry-run
+python peelx_auto.py --dry-run
 ```
 
 ### What It Shows
@@ -58,12 +58,12 @@ Create backups of all archives before deletion. This allows you to restore them 
 
 **Interactive Mode:**
 ```bash
-python archive_extractor.py --backup
+python peelx.py --backup
 ```
 
 **Automatic Mode:**
 ```bash
-python archive_extractor_auto.py --backup
+python peelx_auto.py --backup
 ```
 
 ### Where Backups Are Stored
@@ -176,14 +176,14 @@ Total files restored: 3
 
 1. **Run dry-run first:**
    ```bash
-   python archive_extractor_auto.py --dry-run
+   python peelx_auto.py --dry-run
    ```
 
 2. **Review the output** to see what will happen
 
 3. **Run with backup:**
    ```bash
-   python archive_extractor_auto.py --backup
+   python peelx_auto.py --backup
    ```
 
 4. **If something fails, restore:**
@@ -196,22 +196,22 @@ Total files restored: 3
 **Option 1: Dry-run for quick testing**
 ```bash
 # See what would happen
-python archive_extractor_auto.py --dry-run
+python peelx_auto.py --dry-run
 
 # If it looks good, run for real
-python archive_extractor_auto.py
+python peelx_auto.py
 ```
 
 **Option 2: Always use backup during development**
 ```bash
 # Always create backups
-python archive_extractor_auto.py --backup
+python peelx_auto.py --backup
 ```
 
 **Option 3: Keep archives, don't delete**
 ```bash
 # Extract but keep archives
-python archive_extractor_auto.py --no-delete
+python peelx_auto.py --no-delete
 ```
 
 ## Combining Flags
@@ -220,13 +220,13 @@ You can combine multiple flags:
 
 ```bash
 # Dry-run with backup flag (backup won't happen in dry-run)
-python archive_extractor_auto.py --dry-run --backup
+python peelx_auto.py --dry-run --backup
 
 # Extract, backup, but keep archives
-python archive_extractor_auto.py --backup --no-delete
+python peelx_auto.py --backup --no-delete
 
 # Just list what's there
-python archive_extractor_auto.py --list-only
+python peelx_auto.py --list-only
 ```
 
 ## Safety Tips

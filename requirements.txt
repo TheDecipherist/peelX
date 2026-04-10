@@ -1,4 +1,4 @@
-# Optional dependencies for Archive Extractor
+# Optional dependencies for PeelX
 # Core functionality works with Python standard library only
 
 # For RAR file support
@@ -6,3 +6,12 @@ rarfile>=4.0
 
 # For 7Z file support
 py7zr>=0.20.0
+
+# Windows curses support (interactive selector)
+windows-curses>=2.3; sys_platform == "win32"
+
+# Development
+pytest>=7.0
+
+# Building Windows executable
+pyinstaller>=6.0

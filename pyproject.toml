@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "peelx"
+version = "1.0.0"
+description = "Archive extractor and executable runner - scans directories, recursively extracts nested archives, and provides an interactive interface to run executables."
+readme = "README.md"
+license = "Unlicense"
+requires-python = ">=3.6"
+authors = [
+    { name = "TheDecipherist" },
+]
+keywords = ["archive", "extractor", "rar", "zip", "7z", "nested", "recursive"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Environment :: Console :: Curses",
+    "Intended Audience :: End Users/Desktop",
+
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Archiving :: Compression",
+    "Topic :: Utilities",
+]
+
+[project.optional-dependencies]
+rar = ["rarfile>=4.0"]
+sevenz = ["py7zr>=0.20.0"]
+all = ["rarfile>=4.0", "py7zr>=0.20.0"]
+windows = ["windows-curses>=2.3"]
+dev = ["pytest>=7.0", "pyinstaller>=6.0", "build", "twine"]
+
+[project.scripts]
+peelx = "peelx.core:main"
+peelx-auto = "peelx.auto:main"
+peelx-build-exe = "peelx.build_exe:main"
+
+[project.urls]
+Homepage = "https://github.com/TheDecipherist/PeelX"
+Repository = "https://github.com/TheDecipherist/PeelX"
+Issues = "https://github.com/TheDecipherist/PeelX/issues"
+Changelog = "https://github.com/TheDecipherist/PeelX/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+include = ["peelx*"]
+
+[tool.setuptools]
+py-modules = []

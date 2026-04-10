@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 """
-Archive Extractor - Auto Mode
+PeelX - Auto Mode
 Automatically processes all folders with archives without user prompts.
-Usage: python archive_extractor_auto.py [directory] [--no-delete] [--no-run]
+Usage: python peelx_auto.py [directory] [--no-delete] [--no-run]
 """
 
 import sys
 import argparse
 from pathlib import Path
-from archive_extractor import ArchiveExtractor
+from peelx.core import PeelX
 
 
 def main():
     """Main application entry point for auto mode."""
-    parser = argparse.ArgumentParser(description='Archive Extractor - Automatic Mode')
+    parser = argparse.ArgumentParser(description='PeelX - Auto Mode')
     parser.add_argument('directory', nargs='?', default='archives',
                        help='Directory to scan (default: archives)')
     parser.add_argument('--no-delete', action='store_true',
                        help='Do not delete archives after extraction')
-    parser.add_argument('--no-run', action='store_true',
-                       help='Do not run executables, just extract')
     parser.add_argument('--list-only', action='store_true',
                        help='Only list folders and archives, do not extract')
     parser.add_argument('--dry-run', action='store_true',
@@ -32,7 +30,7 @@ def main():
     args = parser.parse_args()
 
     print("\n" + "="*60)
-    print("  Archive Extractor - Automatic Mode")
+    print("  PeelX - Auto Mode")
     print("="*60 + "\n")
 
     if args.dry_run:
@@ -43,7 +41,7 @@ def main():
         print("🐛 DEBUG MODE: Detailed output enabled")
         print("="*60 + "\n")
 
-    extractor = ArchiveExtractor(args.directory, dry_run=args.dry_run, debug=args.debug)
+    extractor = PeelX(args.directory, dry_run=args.dry_run, debug=args.debug)
 
     print(f"Scanning directory: {extractor.base_dir.absolute()}\n")
 
@@ -139,9 +137,8 @@ def main():
                 rel_path = exe
             print(f"  [{idx}] {rel_path}")
 
-        if not args.no_run:
-            print("\nTo run executables, use interactive mode:")
-            print("  python archive_extractor.py")
+        print("\nTo run executables, use interactive mode:")
+        print("  python peelx.py")
         print()
     else:
         print("\nNo executables found in the processed folders.\n")

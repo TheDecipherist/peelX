@@ -3,158 +3,140 @@
 
 import sys
 from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import pytest
 import tempfile
 import shutil
 from interactive_selector import InteractiveSelector
 
 
-def test_nfo_detection():
-    """Test that NFO files are found with various naming patterns."""
-    print("Testing NFO file detection...\n")
-
-    # Create temp directory
-    temp_dir = Path(tempfile.mkdtemp(prefix="nfo_test_"))
-
-    try:
-        # Test Case 1: R2R.nfo pattern (release group naming)
-        print("Test 1: Release group NFO (R2R.nfo)")
-        print("-" * 60)
-        test1_dir = temp_dir / "KORG.Modwave.Native"
-        test1_dir.mkdir()
-
-        exe1 = test1_dir / "Setup.exe"
-        exe1.write_text("fake exe")
-
-        nfo1 = test1_dir / "R2R.nfo"
-        nfo1.write_text("Release by R2R\nThis is the NFO content")
-
-        selector = InteractiveSelector([exe1], temp_dir)
-        found = selector.find_info_file(exe1)
-
-        if found:
-            print(f"✓ Found: {found.name}")
-            print(f"  Content preview: {found.read_text()[:50]}...")
-        else:
-            print("✗ NOT FOUND")
-        print()
-
-        # Test Case 2: Exact match (Setup.nfo)
-        print("Test 2: Exact match (Setup.nfo)")
-        print("-" * 60)
-        test2_dir = temp_dir / "TestGame"
-        test2_dir.mkdir()
-
-        exe2 = test2_dir / "Setup.exe"
-        exe2.write_text("fake exe")
-
-        nfo2 = test2_dir / "Setup.nfo"
-        nfo2.write_text("Setup instructions")
-
-        selector = InteractiveSelector([exe2], temp_dir)
-        found = selector.find_info_file(exe2)
-
-        if found:
-            print(f"✓ Found: {found.name}")
-        else:
-            print("✗ NOT FOUND")
-        print()
-
-        # Test Case 3: Common name (readme.txt)
-        print("Test 3: Common name (readme.txt)")
-        print("-" * 60)
-        test3_dir = temp_dir / "TestTool"
-        test3_dir.mkdir()
-
-        exe3 = test3_dir / "tool.exe"
-        exe3.write_text("fake exe")
-
-        txt3 = test3_dir / "readme.txt"
-        txt3.write_text("README content")
-
-        selector = InteractiveSelector([exe3], temp_dir)
-        found = selector.find_info_file(exe3)
-
-        if found:
-            print(f"✓ Found: {found.name}")
-        else:
-            print("✗ NOT FOUND")
-        print()
-
-        # Test Case 4: Multiple NFOs (should find first .nfo)
-        print("Test 4: Multiple NFOs")
-        print("-" * 60)
-        test4_dir = temp_dir / "MultiNFO"
-        test4_dir.mkdir()
-
-        exe4 = test4_dir / "launcher.exe"
-        exe4.write_text("fake exe")
-
-        nfo4a = test4_dir / "release.nfo"
-        nfo4a.write_text("Release NFO")
-
-        nfo4b = test4_dir / "info.nfo"
-        nfo4b.write_text("Info NFO")
-
-        selector = InteractiveSelector([exe4], temp_dir)
-        found = selector.find_info_file(exe4)
-
-        if found:
-            print(f"✓ Found: {found.name}")
-            print(f"  (Note: Returns first .nfo found)")
-        else:
-            print("✗ NOT FOUND")
-        print()
-
-        # Test Case 5: No NFO
-        print("Test 5: No NFO file")
-        print("-" * 60)
-        test5_dir = temp_dir / "NoNFO"
-        test5_dir.mkdir()
-
-        exe5 = test5_dir / "app.exe"
-        exe5.write_text("fake exe")
-
-        selector = InteractiveSelector([exe5], temp_dir)
-        found = selector.find_info_file(exe5)
-
-        if found:
-            print(f"✗ Unexpected: {found.name}")
-        else:
-            print("✓ Correctly returned None (no NFO)")
-        print()
-
-        # Test Case 6: Case insensitive extension
-        print("Test 6: Mixed case extension (.NFO)")
-        print("-" * 60)
-        test6_dir = temp_dir / "CaseSensitive"
-        test6_dir.mkdir()
-
-        exe6 = test6_dir / "game.exe"
-        exe6.write_text("fake exe")
-
-        nfo6 = test6_dir / "Release.NFO"
-        nfo6.write_text("UPPERCASE NFO")
-
-        selector = InteractiveSelector([exe6], temp_dir)
-        found = selector.find_info_file(exe6)
-
-        if found:
-            print(f"✓ Found: {found.name}")
-        else:
-            print("✗ NOT FOUND (case sensitivity issue)")
-        print()
-
-        print("=" * 60)
-        print("Summary: NFO detection should now find R2R.nfo files!")
-        print("=" * 60)
-
-    finally:
-        # Cleanup
-        shutil.rmtree(temp_dir)
-        print(f"\nCleaned up: {temp_dir}")
+@pytest.fixture
+def temp_dir():
+    d = Path(tempfile.mkdtemp(prefix="nfo_test_"))
+    yield d
+    shutil.rmtree(d)
 
 
-if __name__ == '__main__':
-    test_nfo_detection()
+def _make_exe(directory: Path, name: str = "setup.exe") -> Path:
+    exe = directory / name
+    exe.write_text("fake exe")
+    return exe
+
+
+class TestNfoDetection:
+    """Tests for InteractiveSelector.find_info_file()."""
+
+    def test_release_group_nfo(self, temp_dir: Path):
+        """Should find R2R.nfo (release group naming pattern)."""
+        test_dir = temp_dir / "release"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir)
+        (test_dir / "R2R.nfo").write_text("Release by R2R")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.name == "R2R.nfo"
+
+    def test_exact_name_match(self, temp_dir: Path):
+        """Should find NFO matching executable name (setup.nfo for setup.exe)."""
+        test_dir = temp_dir / "exact"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir, "Setup.exe")
+        (test_dir / "Setup.nfo").write_text("Setup instructions")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.name == "Setup.nfo"
+
+    def test_common_readme_name(self, temp_dir: Path):
+        """Should find readme.txt as info file."""
+        test_dir = temp_dir / "readme"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir, "tool.exe")
+        (test_dir / "readme.txt").write_text("README content")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.name == "readme.txt"
+
+    def test_no_nfo_returns_none(self, temp_dir: Path):
+        """Should return None when no info file exists."""
+        test_dir = temp_dir / "empty"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir, "app.exe")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is None
+
+    def test_case_insensitive_extension(self, temp_dir: Path):
+        """Should find .NFO files (uppercase extension)."""
+        test_dir = temp_dir / "case"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir, "game.exe")
+        (test_dir / "Release.NFO").write_text("UPPERCASE NFO")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.suffix.lower() == ".nfo"
+
+    def test_parent_directory_search(self, temp_dir: Path):
+        """Should find info file in parent directory when not in same dir."""
+        parent_dir = temp_dir / "parent"
+        parent_dir.mkdir()
+        sub_dir = parent_dir / "bin"
+        sub_dir.mkdir()
+        exe = _make_exe(sub_dir, "game.exe")
+        (parent_dir / "readme.nfo").write_text("Parent NFO")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.name == "readme.nfo"
+
+    def test_diz_extension(self, temp_dir: Path):
+        """Should find .diz files."""
+        test_dir = temp_dir / "diz"
+        test_dir.mkdir()
+        exe = _make_exe(test_dir, "app.exe")
+        (test_dir / "file_id.diz").write_text("DIZ content")
+
+        selector = InteractiveSelector([exe], temp_dir)
+        found = selector.find_info_file(exe)
+        assert found is not None
+        assert found.suffix == ".diz"
+
+
+class TestReadInfoFile:
+    """Tests for InteractiveSelector.read_info_file()."""
+
+    def test_utf8_content(self, temp_dir: Path):
+        info_file = temp_dir / "test.nfo"
+        info_file.write_text("Hello World\nLine 2\nLine 3", encoding='utf-8')
+
+        selector = InteractiveSelector([], temp_dir)
+        lines = selector.read_info_file(info_file)
+        assert lines == ["Hello World", "Line 2", "Line 3"]
+
+    def test_max_lines_truncation(self, temp_dir: Path):
+        info_file = temp_dir / "long.nfo"
+        info_file.write_text("\n".join(f"Line {i}" for i in range(200)), encoding='utf-8')
+
+        selector = InteractiveSelector([], temp_dir)
+        lines = selector.read_info_file(info_file, max_lines=10)
+        assert len(lines) == 11  # 10 lines + truncation message
+        assert "truncated" in lines[-1]
+
+    def test_tab_expansion(self, temp_dir: Path):
+        info_file = temp_dir / "tabs.nfo"
+        info_file.write_text("col1\tcol2\tcol3", encoding='utf-8')
+
+        selector = InteractiveSelector([], temp_dir)
+        lines = selector.read_info_file(info_file)
+        assert "\t" not in lines[0]  # Tabs should be expanded

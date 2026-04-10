@@ -1,0 +1,34 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+include requirements.txt
+
+recursive-include peelx *.py
+
+# Exclude sensitive and non-package files
+exclude .pypirc
+exclude .env
+exclude .env.*
+exclude executions.log
+include build_exe.py
+exclude run_peelx.py
+exclude run_peelx_auto.py
+exclude peelx.py
+exclude peelx_auto.py
+exclude peelx.spec
+
+recursive-exclude .claude *
+recursive-exclude .mdd *
+recursive-exclude .vscode *
+recursive-exclude archives *
+recursive-exclude archives_copy *
+recursive-exclude tests *
+recursive-exclude utils *
+recursive-exclude docs *
+recursive-exclude __pycache__ *
+recursive-exclude build *
+
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.log
+global-exclude .DS_Store
