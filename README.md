@@ -1,5 +1,7 @@
 # PeelX
 
+![PeelX Hero](peelX_hero.webp)
+
 **Recursively extract nested archives and run every installer -- one command, zero hassle.**
 
 ---
