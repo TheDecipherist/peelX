@@ -1,6 +1,6 @@
 # PeelX
 
-![PeelX Hero](peelX_hero.webp)
+![PeelX Hero](https://raw.githubusercontent.com/TheDecipherist/peelX/main/peelX_hero.webp)
 
 **Recursively extract nested archives and run every installer -- one command, zero hassle.**
 
