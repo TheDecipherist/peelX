@@ -58,6 +58,8 @@ executions.log
 *.log
 
 archives_copy/
+drivers/
+drivers_copy/
 
 # Temporary AI research files
 _ai_temp/

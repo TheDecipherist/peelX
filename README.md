@@ -99,6 +99,10 @@ peelx ~/Downloads/drivers/ --debug
 
 That's it. PeelX scans the target directory, finds every folder containing archives, extracts recursively, cleans up, and launches the interactive selector.
 
+*PeelX scanning a drivers folder and listing all detected archives:*
+
+![PeelX scanning and detecting archives in a drivers folder](https://raw.githubusercontent.com/TheDecipherist/peelX/main/screenshots/peelx_archives_detected.webp)
+
 ---
 
 ## Why PeelX?
@@ -119,33 +123,21 @@ peelx ~/Downloads/drivers/
 
 Every archive extracted. Every nested archive extracted. All the .sfv, .par2, and .r00 files cleaned up. Every setup.exe found and presented in a clean interface so you can run them one by one.
 
+*PeelX extracting all 7 driver archives, cleaning up, and launching the interactive selector:*
+
+![PeelX extracting archives and cleaning up](https://raw.githubusercontent.com/TheDecipherist/peelX/main/screenshots/peelx_extracting_archives.webp)
+
 ---
 
 ## Interactive Selector
 
 After extraction, PeelX launches an interactive curses-based UI with two display modes:
 
-### Split-Screen Mode (default)
+*Split-screen mode with executable list on the left and NFO preview on the right:*
 
-```
-+-------------------------------------------+------------------------+
-|  EXECUTABLES                              |  PREVIEW               |
-|                                           |                        |
-|  [ ] Gigabyte_LAN/setup.exe              |  Release: LAN Driver   |
-|  [*] ASUS_Audio/install.exe   (ran 1x)   |  Version: 6.0.1.8     |
-|  [ ] MSI_BIOS/flash.exe                  |  Date: 2025-03-15     |
-|  [ ] Realtek_WiFi/setup.exe              |                        |
-|  [*] NVIDIA_Driver/setup.exe  (ran 1x)   |  Install Notes:        |
-|                                           |  Run as administrator  |
-|                                           |  Reboot after install  |
-+-------------------------------------------+------------------------+
-|  Up/Down: Navigate | Enter: Run | q: Quit | Right: Full preview   |
-+-------------------------------------------+------------------------+
-```
+![PeelX interactive selector with NFO preview](https://raw.githubusercontent.com/TheDecipherist/peelX/main/screenshots/peelx_gui.webp)
 
-### Full-Screen Preview Mode
-
-Press the right arrow key to expand the preview panel to full screen. Useful for reading longer NFO files. Press left arrow to go back to the split view.
+Navigate with arrow keys, hit Enter to run. Press the right arrow to expand the NFO preview to full screen, left arrow to go back.
 
 ### Key Features
 
@@ -202,6 +194,53 @@ python build_exe.py
 ```
 
 The build script installs any missing dependencies (PyInstaller, rarfile, py7zr, windows-curses) and produces a single-file executable at `dist/peelx.exe`. Has to be run on Windows since PyInstaller builds for the current platform.
+
+---
+
+## Troubleshooting
+
+### Windows: RAR or 7z extraction fails
+
+PeelX relies on external tools for RAR and 7z formats. You need to have them installed **and added to your system PATH** so PeelX can find them.
+
+1. Install [WinRAR](https://www.win-rar.com/) and/or [7-Zip](https://www.7-zip.org/)
+2. Add their install paths to your PATH environment variable:
+   - WinRAR: typically `C:\Program Files\WinRAR`
+   - 7-Zip: typically `C:\Program Files\7-Zip`
+3. Open a new terminal and verify they work:
+
+```
+unrar
+7z
+```
+
+If either command isn't recognized, the PATH isn't set correctly. Go to Settings > System > About > Advanced system settings > Environment Variables, find `Path` under System variables, and add the install directories.
+
+### Linux/macOS: RAR or 7z extraction fails
+
+Install the system packages:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install unrar p7zip-full
+
+# macOS
+brew install unrar p7zip
+```
+
+Or install the Python libraries instead:
+
+```bash
+pip install peelx[all]
+```
+
+### Executable won't run on Linux/macOS
+
+PeelX tries to set execute permissions automatically, but you may need to do it manually:
+
+```bash
+chmod +x /path/to/executable
+```
 
 ---
 
